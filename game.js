@@ -1,7 +1,7 @@
 function run(player, OPPONENT) {
     // SELECT CANVAS
     const canvas = document.getElementById("cvs");
-    const ctx = canvas.getContent("2nd");
+    const ctx = canvas.getContext("2d");
 
     // BOARD VARIABLES
     let board = [];
@@ -34,11 +34,14 @@ function run(player, OPPONENT) {
         [2, 4, 6]
 
     ];
+
+    let GAME_OVER = false;
     
     function drawBoard() {
         
         let id = 0;
         for (let i = 0; i < ROW; i++) {
+            console.log(i)
             board[i] = [];
             for (let j = 0; j < COLUMN; j++ ) {
                 board[i][j] = id;
@@ -56,56 +59,73 @@ function run(player, OPPONENT) {
     // ON USER CLICK LISTENING
     canvas.addEventListener("click", function(e) {
 
+        if(GAME_OVER) return;
+
         // X & Y position of mouse click relative to the canvas
         let X = e.clientX - canvas.getBoundingClientRect().x;
-        let Y = e.clientX - canvas.getBoundingClientRect().y;
+        let Y = e.clientY - canvas.getBoundingClientRect().y;
 
         // Using Canvas coordinates to pick the clicked space or cell
         let i = Math.floor(Y/CELL_SIZE);
         let j = Math.floor(X/CELL_SIZE);
-
+        console.log(j);
         // Hold the id of the clicked space
         let id = board[i][j];
-        
+        console.log(board[i]);
         // Check and stop reuse of spaces taken
         if (gameData[id]) return;
 
         // Store move to gameData
         gameData[id] = currentPlayer;
         console.log(gameData);
-        console.log(id )
+        console.log(id)
+
         // Place the move on board
         placeOnBoard(currentPlayer, i, j);
 
         // Win check
-        function isWinner(gameData, player) {
-            for (let i = 0; i < COMBOS.length; i++) {
-                let won = true;
+        if (isWinner(gameData, currentPlayer)) {
+            gameOver(currentPlayer);
+            GAME_OVER = true;
+            return;
+        }
 
-                for (let i = 0; i < COMBOS[i].length; i++) {
-                    let id = COMBOS[i][j];
-                    won = gameData[id] == player && won;
-                }
-                if (won) {
-                    return true;
-                }
-            }
-            return false;
-        }
         // Tie check
-        function isTie(gameData) {
-            let isBoardFull = true;
-            for (let i = 0; i < gameData.length; i++) {
-                isBoardFull = gameData[i] && isBoardFull;
-            }
-            if (isBoardFull) {
-                return true;
-            }
-            return false;
+        if (isTie(gameData)) {
+            gameOver(currentPlayer);
+            GAME_OVER = true;
+            return;
         }
+
         // Toggle players
         currentPlayer = currentPlayer == player.user ? player.friend : player.user;
     });
+
+    function isWinner(gameData, player) {
+        for (let i = 0; i < COMBOS.length; i++) {
+            let won = true;
+
+            for (let j = 0; j < COMBOS[i].length; j++) {
+                let id = COMBOS[i][j];
+                won = gameData[id] == player && won;
+            }
+            if (won) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Tie check
+    function isTie(gameData) {
+        let isBoardFull = true;
+        for (let i = 0; i < gameData.length; i++) {
+            isBoardFull = gameData[i] && isBoardFull;
+        }
+        if (isBoardFull) {
+            return true;
+        }
+        return false;
+    }
 
     function gameOver(player) {
         let message = player == "tie" ? " Tie no Loser" : "The winner is";
@@ -113,7 +133,7 @@ function run(player, OPPONENT) {
 
         gameOverElement.innerHTML = `
         <h1>${message}<h1>
-        <img class="winner-img" src=${imgSrc} width="150px" height="150px"</img>
+        <img class="winner-img" src=${imgSrc} </img>
         <div class="play" onclick="location.reload()">Play Again!</div>
         `;
         gameOverElement.classList.remove("hide");

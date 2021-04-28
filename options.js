@@ -1,6 +1,6 @@
 // SELECT ELEMENTS
 const options = document.querySelector(".options");
-const gameOverElement = document.querySelector(".gameover hide");
+const gameOverElement = document.querySelector(".gameover");
 
 // SELECT ELEMENTS
 const computerBtn = options.querySelector(".computer");
@@ -18,43 +18,44 @@ const player = new Object;
 computerBtn.addEventListener("click", function() {
     OPPONENT = "computer";
     
-    switchActive();
+    switchActive(friendBtn, computerBtn);
 });
 
 friendBtn.addEventListener("click", function() {
     OPPONENT = "friend";
     
-    switchActive();
+    switchActive(computerBtn, friendBtn);
 });
 
 xBtn.addEventListener("click", function() {
-    player.user = "x";
-    player.computer = "o";
-    player.friend = "o";
+    player.user = "X";
+    player.computer = "O";
+    player.friend = "O";
     
     switchActive(oBtn, xBtn);
 });
 oBtn.addEventListener("click", function() {
-    player.user = "o";
-    player.computer = "x";
-    player.friend = "x";
+    player.user = "O";
+    player.computer = "X";
+    player.friend = "X";
     
     switchActive(xBtn, oBtn);
 });
 playBtn.addEventListener("click", function() {
     if (!OPPONENT) {
-        computerBtn.style.backgroundColor = "#f00";
-        friendBtn.style.backgroundColor = "#f00";
+        computerBtn.style.backgroundColor = "salmon";
+        friendBtn.style.backgroundColor = "salmon";
 
         return;
     }
 
     if (!player.user) {
-        xBtn.style.backgroundColor = "#f00";
-        oBtn.style.backgroundColor = "#f00";
+        xBtn.style.backgroundColor = "salmon";
+        oBtn.style.backgroundColor = "salmon";
 
         return;
     }
+    //Run Game
     run(player, OPPONENT);
     options.classList.add("hide");
 
