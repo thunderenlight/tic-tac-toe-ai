@@ -92,14 +92,127 @@ function run(player, OPPONENT) {
 
         // Tie check
         if (isTie(gameData)) {
-            gameOver(currentPlayer);
+            gameOver("tie");
             GAME_OVER = true;
             return;
         }
+        if (OPPONENT == "computer") { //Start here @28.11
+            // Get id of cell using minimax algorithm
+            // Hold the id of the clicked cell
+            let id = minimax( gameData, player.computer ).id;
+            console.log(board[i]);
+            
+            // Store player's move to gameData
+            gameData[id] = player.computer;
 
-        // Toggle players
-        currentPlayer = currentPlayer == player.user ? player.friend : player.user;
+            // Get i and j of cell
+            let space = getIJ(id); 
+            console.log(gameData);
+            console.log(id)
+
+            // Place the move on board
+            placeOnBoard(player.computer, space.i, space.j);
+
+            // Win check
+            if (isWinner(gameData, player.computer)) {
+                gameOver(player.computer);
+                GAME_OVER = true;
+                return;
+            }
+
+            // Tie check
+            if (isTie(gameData)) {
+                gameOver("tie");
+                GAME_OVER = true;
+                return;
+            }
+        } else {
+            // Toggle players
+            currentPlayer = currentPlayer == player.user ? player.friend : player.user;
+        }
     });
+    //MINIMAX
+    function minimax(gameData, PLAYER) {
+        //BASE LOGIC 
+        if( isWinner(gameData, player.computer) ) return  { evaluation : +10 };
+        if( isWinner(gameData, player.user)     ) return  { evaluation : -10 };
+        if( isTie(gameData)                     ) return  { evaluation :   0 };
+    
+        let EMPTY_CELLS = getEmptyCells(gameData);
+
+        // Save all Moves and Evaulations
+        let moves = [];
+
+        // Loop over empty cells and eval
+        for (let i = 0; i < EMPTY_CELLS.length; i++) {
+            // Get id 
+            let id = EMPTY_CELLS[i];
+            // Save Cell hold for eval
+            let backup = gameData[id];
+            // Move Player?
+            gameData[id] = PLAYER;
+
+            // Save Move's ID and EVAL
+            let move = {};
+            move.id = id;
+            // Evaluate the virtual move
+            if (PLAYER == player.computer) {
+                move.evaluation = minimax(gameData, player.user).evaluation;
+            } else {
+                move.evaluation = minimax(gameData, player.computer).evaluation;
+            }
+
+            // Reset Empty Cell
+            gameData[id] = backup;
+
+            // Push to moves array
+            moves.push(move);
+        }
+
+        // AI algorithm
+
+        let bestMove;
+
+        if (PLAYER == player.computer) {
+            // Maximizer
+            let bestEvaluation = -Infinity;
+            for (let i = 0; i < moves.length; i++) {
+                if ( moves[i].evaluation > bestEvaluation ) {
+                    bestEvaluation = moves[i].evaluation;
+                    bestMove = moves[i];
+                }
+            }
+        } else {
+            // Minimizer
+            let bestEvaluation = +Infinity;
+            for (let i = 0; i < moves.length; i++) {
+                if ( moves[i].evaluation < bestEvaluation ) {
+                    bestEvaluation = moves[i].evaluation;
+                    bestMove = moves[i];
+                }
+            }
+        }
+        return bestMove;
+
+    }
+    // Get Empty Cells
+    function getEmptyCells(gameData) {
+        let EMPTY = [];
+
+        for (let id = 0; id < gameData.length; id++ ){
+            if (!gameData[id]) EMPTY.push(id);
+        }
+        return EMPTY;
+    }
+
+    // Get cell's i and j
+    function getIJ(id) {
+        for (let i = 0; i < board.length; i++) {
+            for (let j = 0; j < board[i].length; j++) {
+                if (board[i][j] == id) return  {i : i, j: j}
+            }
+        }
+    }
 
     function isWinner(gameData, player) {
         for (let i = 0; i < COMBOS.length; i++) {
